@@ -89,8 +89,18 @@ def upload_page():
             result.textContent = 'Uploading and checking video...';
             try {
                 const response = await fetch('/api/upload-video', { method: 'POST', body: form });
-                const data = await response.json();
-                result.textContent = JSON.stringify(data, null, 2);
+                const text = await response.text();
+                try {
+                    const data = JSON.parse(text);
+                    result.textContent = JSON.stringify(data, null, 2);
+                } catch {
+                    result.textContent = JSON.stringify({
+                        status: 'error',
+                        http_status: response.status,
+                        response_content_type: response.headers.get('content-type'),
+                        response_body: text.slice(0, 2000)
+                    }, null, 2);
+                }
             } catch (error) {
                 result.textContent = JSON.stringify({status: 'error', message: error.message}, null, 2);
             }
